@@ -30,6 +30,7 @@
     "placeholder"
   ],
   "dependencies": {
+    "react-native-text-input-mask": "^2.0.0",
     "validator": "^13.0.0"
   },
   "peerDependencies": {

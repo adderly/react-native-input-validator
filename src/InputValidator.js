@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {Keyboard, TextInput} from 'react-native';
+import {Keyboard, TextInput, MaskedViewBase} from 'react-native';
+import TextInputMask from 'react-native-text-input-mask';
 import PropTypes from 'prop-types';
 import validator from "validator";
 import {Style} from "../style";
@@ -9,7 +10,7 @@ import {Style} from "../style";
  * @author Marco Cesarato <cesarato.developer@gmail.com>
  */
 class InputValidator extends Component {
-
+    inputRef;
     /**
      * Constructor
      * @param props
@@ -298,14 +299,14 @@ class InputValidator extends Component {
      * On Change Text
      * @param text
      */
-    onChangeText(text) {
+    onChangeText(text, formatted) {
         this.validate(text);
         if (this.props.onChangeText) {
             let value = text;
             if(this.typeNumeric()){
                 value = this.parseNum(value);
             }
-            this.props.onChangeText(value);
+            this.props.onChangeText(value, formatted);
         }
     }
 
@@ -394,6 +395,23 @@ class InputValidator extends Component {
             props.pointerEvents = "none";
         }
 
+        if (props.mask && !validator.isEmpty(props.mask)) {
+            return(
+                <TextInputMask
+                refInput={ref => { this.input = ref }}
+                // onChangeText={(formatted, extracted) => {
+                //     console.log(formatted) // +1 (123) 456-78-90
+                //     console.log(extracted) // 1234567890
+                // // }}
+                // mask={"+1 ([000]) [000] [00] [00]"}
+                keyboardType={keyboardType}
+                autoFocus={false}
+                underlineColorAndroid={'transparent'}
+                {...props}
+                />
+            );
+        }
+
         return (
             <TextInput
                 ref={(r) => {
@@ -418,6 +436,7 @@ InputValidator.propTypes = {
     onEndEditing: PropTypes.func,
     password: PropTypes.bool,
     secureTextEntry: PropTypes.bool,
+    mask: PropTypes.string,
 };
 
 InputValidator.defaultProps = {
