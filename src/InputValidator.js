@@ -140,6 +140,10 @@ class InputValidator extends Component {
         let is_valid = true;
         const text = this.parseValue(value).trim();
 
+        if(this.props.required && validator.isEmpty(text)) {
+            return false;
+        }
+
         switch (this.getType()) {
             case "email":
                 if (!validator.isEmail(text)) {
@@ -232,6 +236,11 @@ class InputValidator extends Component {
         const valid = this.isValid(text);
         this.setState({value: text, validated: valid});
         return valid;
+    }
+
+    
+    dirty(value) {
+        this.setState({ validated: !value});
     }
 
     /**
