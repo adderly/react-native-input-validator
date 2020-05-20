@@ -4,6 +4,8 @@ import {Animated, Easing,/*TouchableOpacity,*/ View} from 'react-native';
 import {Palette, Style, CleanStyle, DirtyStyle} from "../style";
 import validator from "validator";
 import InputValidator from "./InputValidator";
+import Helper from './components/helper/index';
+import Counter from './components/counter/index';
 
 /**
  * Text Input Validator
@@ -148,15 +150,114 @@ class InputValidatorPlaceholder extends InputValidator {
         )
     }
 
+    renderHelper() {
+        let { validated: valid } = this.state;
+        // let title = 'title'
+        // disabled = false
+        // baseColor = 'white'
+        // errorColor = 'red'
+        // titleTextStyle = {}
+        // characterRestriction = undefined
+        // length = 100
+        // style={ 
+        //     color: 'red', 
+        //     // backgroundColor: 'red'
+        // }
+        // limit = 100
+        // count = 3
+    
+        let {
+          title,
+          disabled,
+          baseColor,
+          errorColor,
+          errorString : error,
+          titleTextStyle: style,
+          characterRestriction: limit,
+        } = this.props;
+        
+        console.log('Errir = >', error)
+
+        // if (error == true) {
+        //     // style.color = 'red'
+        //     style.textColor = 'rgba(0, 0, 0, .87)',
+        //     style.baseColo= 'rgba(0, 0, 0, .38)',
+
+        //     style.errorColor= 'rgb(213, 0, 0)',
+        //     style.backgroundColor = 'red'
+        // } else {
+            
+        //     // style.color = 'red'
+        //     style.backgroundColor = 'white'
+            
+        // }
+
+        if (valid) {
+            error = undefined;
+        }
+        
+    
+        let { length: count } = this.state.value; 
+    
+        let containerStyle =  {
+          paddingLeft: 0,
+          paddingRight:0,
+          minHeight: 0,
+        };
+    
+        let styleProps = {
+          style,
+          baseColor,
+          errorColor,
+        };
+    
+        let counterProps = {
+          ...styleProps,
+          limit,
+          count,
+        };
+    
+        let anim  =  new Animated.Value(0);
+        let helperProps = {
+          ...styleProps,
+          title,
+          error,
+          disabled,
+          focusAnimation: anim,
+        };
+    
+        return (
+          <View style={[{
+            flex:0,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'flex-end',
+            // height: 12
+          }, containerStyle]}>
+            <Helper {...helperProps} />
+            <Counter {...counterProps} />
+          </View>
+        );
+      }
+
     /**
      * Render
      * @returns {*}
      */
     render() {
         return (
-            <View style={[Style.element, this.props.containerStyle]}>
-                {this.renderLabel()}
-                {super.render()}
+            <View style={[{ 
+                flex:1,
+                flexDirection:"column",
+                // backgroundColor: 'yellow',
+                alignItems: 'flex-end',
+                // justifyContent: 'flex-end',
+                }]}>
+                <View style={[Style.element, this.props.containerStyle]}>
+                    {this.renderLabel()}
+                    {super.render()}
+                </View>
+                {this.props.renderBelowIndicator ? super.renderIndicator() : this.renderHelper()}
             </View>
         );
     }

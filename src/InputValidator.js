@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Keyboard, TextInput, MaskedViewBase} from 'react-native';
+import {Keyboard, TextInput, Text, StyleSheet, View} from 'react-native';
 import TextInputMask from 'react-native-text-input-mask';
 import PropTypes from 'prop-types';
 import validator from "validator";
@@ -19,10 +19,11 @@ class InputValidator extends Component {
         super(props);
 
         const value = this.parseValue(this.props.value);
+        const validated =  this.props.dirty ? this.props.dirty: true;
 
         this.state = {
             value: value,
-            validated: true,
+            validated: validated,
         };
     }
 
@@ -338,6 +339,14 @@ class InputValidator extends Component {
         return this.input.isFocused();
     }
 
+    
+
+    renderIndicator() {
+        if (this.props.renderBelowIndicator) {
+            return this.props.renderBelowIndicator();
+        }
+    }
+
     /**
      * Render
      * @returns {*}
@@ -398,7 +407,12 @@ class InputValidator extends Component {
         if (props.mask && !validator.isEmpty(props.mask)) {
             return(
                 <TextInputMask
-                refInput={ref => { this.input = ref }}
+                refInput={r => { 
+                    this.input = r;
+                    if (typeof this.props.onRef === 'function') {
+                        this.props.onRef(r)
+                    }}
+                }
                 // onChangeText={(formatted, extracted) => {
                 //     console.log(formatted) // +1 (123) 456-78-90
                 //     console.log(extracted) // 1234567890
@@ -416,6 +430,9 @@ class InputValidator extends Component {
             <TextInput
                 ref={(r) => {
                     this.input = r;
+                    if (typeof this.props.onRef === 'function') {
+                        this.props.onRef(r)
+                    }
                 }}
                 keyboardType={keyboardType}
                 autoFocus={false}
@@ -436,11 +453,46 @@ InputValidator.propTypes = {
     onEndEditing: PropTypes.func,
     password: PropTypes.bool,
     secureTextEntry: PropTypes.bool,
+    onRef: PropTypes.func,
     mask: PropTypes.string,
+    dirty: PropTypes.bool,
+    showTitle: PropTypes.bool,
+    disabled: PropTypes.bool,
+    titleTextStyle: Text.propTypes.style,
+    characterRestriction: PropTypes.number,
+    title: PropTypes.string,
+    errorString: PropTypes.string,
+    renderBelowIndicator: PropTypes.func
 };
 
 InputValidator.defaultProps = {
-    type: 'default'
+    type: 'default',
+    showTitle: false,
+
+    underlineColorAndroid: 'transparent',
+    disableFullscreenUI: true,
+    autoCapitalize: 'sentences',
+    editable: true,
+
+    animationDuration: 225,
+
+    fontSize: 16,
+    labelFontSize: 12,
+
+    tintColor: 'rgb(0, 145, 234)',
+    textColor: 'rgba(0, 0, 0, .87)',
+    baseColor: 'rgba(0, 0, 0, .38)',
+
+    errorColor: 'rgb(213, 0, 0)',
+
+    lineWidth: StyleSheet.hairlineWidth,
+    activeLineWidth: 2,
+    disabledLineWidth: 1,
+
+    lineType: 'solid',
+    disabledLineType: 'dotted',
+
+    disabled: false,
 };
 
 export default InputValidator;
