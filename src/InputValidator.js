@@ -457,6 +457,8 @@ InputValidator.propTypes = {
     mask: PropTypes.string,
     dirty: PropTypes.bool,
     showTitle: PropTypes.bool,
+    // if placeholder present, colapsing animation will be disabled
+    collapsedByPlaceholder: PropTypes.bool,
     disabled: PropTypes.bool,
     titleTextStyle: Text.propTypes.style,
     characterRestriction: PropTypes.number,
