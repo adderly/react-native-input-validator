@@ -24,6 +24,8 @@ class InputValidator extends Component {
         this.state = {
             value: value,
             validated: validated,
+            errorVisible: true,
+            errorMessage: null
         };
     }
 
@@ -54,7 +56,8 @@ class InputValidator extends Component {
         if(typeof this.props.onRef === 'function') {
             this.props.onRef(this);
         }
-        this.validate();
+        if (this.props.validateOnMount === true)
+            this.validate();
     }
 
     /**
@@ -133,11 +136,34 @@ class InputValidator extends Component {
     }
 
     /**
+     *
+     */
+    isValidMultiple(value = null) {
+        let valid = true;
+        let message = '';
+        if (this.props.validations.length > 0) {
+            var validation = null;
+            for (var n = 0; n < this.props.validations.length;n++) {
+                validation = this.props.validations[n];
+                valid = this.validate(value, validation.type);
+                if (valid == false){
+                    if (validation.message && validation.message !== '')
+                        message = validation.message;
+                    break;
+                }
+            }
+        }
+        else valid = this.isValid(value, this.getType());
+
+        return {valid : valid, message: message};
+    }
+
+    /**
      * Is valid
      * @param value
      * @returns {boolean}
      */
-    isValid(value = null) {
+    isValid(value = null, type = null) {
 
         let is_valid = true;
         const text = this.parseValue(value).trim();
@@ -146,7 +172,13 @@ class InputValidator extends Component {
             return false;
         }
 
-        switch (this.getType()) {
+        if (type == null)
+            type = this.getType();
+
+        switch (type) {
+            case "length":
+                //TODO: add this
+                break;
             case "email":
                 if (!validator.isEmail(text)) {
                     is_valid = false;
@@ -240,9 +272,30 @@ class InputValidator extends Component {
         return valid;
     }
 
+    /**
+     * 
+     * @param {*} value 
+     */
+    getIsValid() {
+        return !this.state.validated;
+    }
     
     dirty(value) {
         this.setState({ validated: !value});
+    }
+
+    setValidatorState(st : Object ) 
+    {
+        this.setState(st);
+    }
+
+    setErrorVisibility(which) {}
+
+    /**
+     * TODO: add better interface for this
+     */
+    setErrorString(errorString) {
+        this.setState({errorMessage: errorString});
     }
 
     /**
@@ -338,8 +391,6 @@ class InputValidator extends Component {
     isFocused(){
         return this.input.isFocused();
     }
-
-    
 
     renderIndicator() {
         if (this.props.renderBelowIndicator) {
@@ -444,7 +495,10 @@ class InputValidator extends Component {
 
 InputValidator.propTypes = {
     type: PropTypes.string,
+    validations: PropTypes.array,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    validateOnMount: PropTypes.bool,
+    showInvalidWhenEmpty: PropTypes.bool,
     symbol: PropTypes.string,
     locale: PropTypes.string,
     onBlur: PropTypes.func,
@@ -457,8 +511,6 @@ InputValidator.propTypes = {
     mask: PropTypes.string,
     dirty: PropTypes.bool,
     showTitle: PropTypes.bool,
-    // if placeholder present, colapsing animation will be disabled
-    collapsedByPlaceholder: PropTypes.bool,
     disabled: PropTypes.bool,
     titleTextStyle: Text.propTypes.style,
     characterRestriction: PropTypes.number,
@@ -469,6 +521,9 @@ InputValidator.propTypes = {
 
 InputValidator.defaultProps = {
     type: 'default',
+    validations : [],
+    validateOnMount: true,
+    showInvalidWhenEmpty: false,
     showTitle: false,
 
     underlineColorAndroid: 'transparent',

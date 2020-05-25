@@ -151,7 +151,7 @@ class InputValidatorPlaceholder extends InputValidator {
     }
 
     renderHelper() {
-        let { validated: valid } = this.state;
+        let { validated: valid, errorMessage } = this.state;
         // let title = 'title'
         // disabled = false
         // baseColor = 'white'
@@ -195,6 +195,8 @@ class InputValidatorPlaceholder extends InputValidator {
         if (valid) {
             error = undefined;
         }
+
+        if (errorMessage) error = errorMessage;
         
     
         let { length: count } = this.state.value; 
