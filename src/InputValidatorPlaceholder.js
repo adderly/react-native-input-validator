@@ -30,13 +30,27 @@ class InputValidatorPlaceholder extends InputValidator {
         };
     }
 
+    // componentWillMount() {
+        // this.setState({
+        //     dirty: this.isFieldDirty(),
+        // });
+    // }
+
     /**
      * Component did mount
      */
     componentDidMount() {
-        this.setState({labelStyle: this.getLabelStyle()}, () =>{
-            super.componentDidMount();
+        super.componentDidMount();
+        const dirty = this.isFieldDirty();
+        this.setState({
+            labelStyle: this.getLabelStyle(),
+            dirty: dirty,
+        }, () =>{
         });
+        // super.setValid(!dirty);
+        console.log('VALIDATOR STATE', this.state);
+        console.log('VALIDATOR props', this.props);
+        
     }
 
     /**
@@ -46,9 +60,10 @@ class InputValidatorPlaceholder extends InputValidator {
      */
     componentDidUpdate(prevProps, prevState) {
         super.componentDidUpdate(prevProps, prevState);
-        const dirty = (!validator.isEmpty(this.parseValue()) || this.input.isFocused());
+        const dirty = this.isFieldDirty()
         if(prevState.dirty !== dirty) {
             this.setState({dirty: dirty});
+            // super.setValid(!dirty);
             this.animate(dirty);
         }
     }
@@ -72,30 +87,45 @@ class InputValidatorPlaceholder extends InputValidator {
     validate(value = null) {
 
         const valid = super.validate(value);
-        const text = this.parseValue(value).trim();
-        const dirty = (!validator.isEmpty(text) || this.input.isFocused());
+        const dirty = this.isFieldDirty();
+
+        console.log(`
+            animate : valid: ${valid}  dirty: ${dirty} 
+            required ${this.props.required}
+        `);
+        
 
         let labelStyle = this.getLabelStyle();
 
-        if (valid === false && !this.props.required) {
+        if (valid === false && this.props.required) {
             labelStyle.color = Palette.danger;
-        } else if (!validator.isEmpty(text) && valid === true) {
+        } else if (dirty && valid === true) {
             labelStyle.color = Palette.success;
         } else {
             labelStyle.color = Palette.normal;
         }
 
-        this.animate(dirty);
+        this.animate(dirty, dirty ? 0: 200);
         this.setState({labelStyle: labelStyle, dirty: dirty});
-
+        // super.setValid(!dirty);
         return valid;
+    }
+
+    /**
+     * 
+     */
+    isFieldDirty() {
+      let isDity = !validator.isEmpty(this.parseValue()) 
+      || (this.props.placeholder && !validator.isEmpty(this.props.placeholder))
+      || (this.input && this.input.isFocused());
+      return isDity;
     }
 
     /**
      * Animate floating label
      * @param dirty
      */
-    animate(dirty) {
+    animate(dirty, duration = 200) {
         let nextStyle = dirty ? DirtyStyle : CleanStyle;
         let labelStyle = this.state.labelStyle;
         let anims = Object.keys(nextStyle).map(prop => {
@@ -103,13 +133,13 @@ class InputValidatorPlaceholder extends InputValidator {
                 labelStyle[prop],
                 {
                     toValue: nextStyle[prop],
-                    duration: 200
+                    duration: duration,
                 },
                 Easing.ease
             )
         });
 
-        Animated.parallel(anims).start();
+        Animated.parallel(anims).start(() => { });
     }
 
     /**
@@ -118,8 +148,13 @@ class InputValidatorPlaceholder extends InputValidator {
      * @param refName
      */
     onFocus(event, refName) {
-        this.animate(true);
-        this.setState({dirty: true});
+        let dirty = this.isFieldDirty();
+        if (!dirty) {
+            this.animate(true);
+        }
+        
+        this.setState({dirty: dirty});
+        // super.setValid(!dirty);
         super.onFocus(event, refName);
     }
 
@@ -127,10 +162,12 @@ class InputValidatorPlaceholder extends InputValidator {
      * On Blur
      */
     onBlur() {
-        if (validator.isEmpty(this.parseValue())) {
+        let dirty = this.isFieldDirty();
+        if (!dirty) {
             this.animate(false);
-            this.setState({dirty: false});
         }
+        this.setState({dirty: dirty});
+        // super.setValid(!dirty);
         super.onBlur(arguments);
     }
 

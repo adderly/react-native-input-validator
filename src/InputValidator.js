@@ -19,13 +19,15 @@ class InputValidator extends Component {
         super(props);
 
         const value = this.parseValue(this.props.value);
-        const validated =  this.props.dirty ? this.props.dirty: true;
+        const validated = this.props.dirty ? this.props.dirty: true;
 
         this.state = {
+            valid: validated,
             value: value,
             validated: validated,
             errorVisible: true,
-            errorMessage: null
+            errorMessage: null,
+            isFocused: this.props.value !== '' ? true : false,
         };
     }
 
@@ -268,7 +270,7 @@ class InputValidator extends Component {
     validate(value = null) {
         const text = this.parseValue(value);
         const valid = this.isValid(text);
-        this.setState({value: text, validated: valid});
+        this.setState({value: text, validated: valid,});
         return valid;
     }
 
@@ -280,8 +282,21 @@ class InputValidator extends Component {
         return !this.state.validated;
     }
     
+    setValid(value) {
+        this.setState({
+            valid: value,
+        });
+    }
+
+    //TODO: Remove
     dirty(value) {
-        this.setState({ validated: !value});
+        this.setDirty(value);
+    }
+    
+    setDirty(value) {
+        this.setState({ 
+            validated: !value,
+        });
     }
 
     setValidatorState(st : Object ) 
@@ -336,14 +351,13 @@ class InputValidator extends Component {
         if (this.props.onFocus) {
             this.props.onFocus(event, refName);
         }
-
     }
 
     /**
      * On Blur
      */
     onBlur() {
-        Keyboard.dismiss();
+        // Keyboard.dismiss();
         if (this.props.onBlur) {
             this.props.onBlur(arguments);
         }
@@ -419,7 +433,10 @@ class InputValidator extends Component {
         };
 
         if(!validator.isEmpty(this.parseValue())){
-            props.style.push(this.state.validated ? validStyle : invalidStyle);
+            props.style.push((this.state.validated ) ? validStyle : invalidStyle);
+            // console.log(`
+            //     valid = ${this.state.valid}
+            // `);
         }
 
         let keyboardType = "default";
